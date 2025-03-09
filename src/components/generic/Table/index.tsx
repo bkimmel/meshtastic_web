@@ -13,11 +13,17 @@ export interface Heading {
 }
 
 /**
- * @param hopsAway Number of hops away the node is from the current node
- * @returns number of hopsAway or `0` if hopsAway type is `string`
+ * @param hopsAway String describing the number of hops away the node is from the current node
+ * @returns number of hopsAway or `0` if hopsAway is 'Direct'
  */
-function numericHops(hopsAway: string|number): number {
-  return typeof hopsAway === "string" ? 0 : Number(hopsAway);
+function numericHops(hopsAway: string): number {
+  if(hopsAway.match(/direct/i)){
+    return 0;
+  }
+  if ( hopsAway.match(/\d+\shop/gi) ) {
+    return Number( hopsAway.match(/(\d+)\s+hop/i)?.[1] );
+  }
+  return -1;
 }
 
 export const Table = ({ headings, rows }: TableProps) => {
@@ -56,8 +62,9 @@ export const Table = ({ headings, rows }: TableProps) => {
 
     // Custom comparison for 'Connection' column
     if (sortColumn === "Connection") {
-      const aNumHops = numericHops(aValue.props.hopsAway);
-      const bNumHops = numericHops(bValue.props.hopsAway);
+      //debugger;
+      const aNumHops = numericHops(aValue[0]);
+      const bNumHops = numericHops(bValue[0]);
 
       if (aNumHops < bNumHops) {
         return sortOrder === "asc" ? -1 : 1;
