@@ -12,6 +12,14 @@ export interface Heading {
   sortable: boolean;
 }
 
+/**
+ * @param hopsAway Number of hops away the node is from the current node
+ * @returns number of hopsAway or `0` if hopsAway type is `string`
+ */
+function numericHops(hopsAway: string|number): number {
+  return typeof hopsAway === "string" ? 0 : Number(hopsAway);
+}
+
 export const Table = ({ headings, rows }: TableProps) => {
   const [sortColumn, setSortColumn] = useState<string | null>("Last Heard");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -41,6 +49,20 @@ export const Table = ({ headings, rows }: TableProps) => {
         return sortOrder === "asc" ? -1 : 1;
       }
       if (aTimestamp > bTimestamp) {
+        return sortOrder === "asc" ? 1 : -1;
+      }
+      return 0;
+    }
+
+    // Custom comparison for 'Connection' column
+    if (sortColumn === "Connection") {
+      const aNumHops = numericHops(aValue.props.hopsAway);
+      const bNumHops = numericHops(bValue.props.hopsAway);
+
+      if (aNumHops < bNumHops) {
+        return sortOrder === "asc" ? -1 : 1;
+      }
+      if (aNumHops > bNumHops) {
         return sortOrder === "asc" ? 1 : -1;
       }
       return 0;
